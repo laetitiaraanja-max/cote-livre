@@ -74,8 +74,10 @@ function parseJsonBlock(text: string): ExtractionResult {
  */
 export async function extractFromImage(params: ExtractParams): Promise<ExtractionResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
+  let aiAttempted = false; // l'IA a-t-elle ete sollicitee (cle + image presentes) ?
 
   if (apiKey && params.imageBase64) {
+    aiAttempted = true;
     try {
       const client = new Anthropic({ apiKey });
       const userText = params.isbn
@@ -140,9 +142,18 @@ export async function extractFromImage(params: ExtractParams): Promise<Extractio
     }
   }
 
+  // Messages d'erreur precis selon la vraie cause (evite le faux "cle absente").
+  if (aiAttempted) {
+    throw new Error(
+      "Lecture de la couverture impossible. Reessayez avec une photo nette, bien cadree et lisible, ou saisissez l'ISBN.",
+    );
+  }
+  if (params.imageBase64) {
+    throw new Error(
+      "Service IA indisponible cote serveur (cle ANTHROPIC_API_KEY manquante).",
+    );
+  }
   throw new Error(
-    params.imageBase64
-      ? "Extraction indisponible : cle Anthropic absente. Ajoutez ANTHROPIC_API_KEY ou saisissez un ISBN connu."
-      : "Aucune photo ni ISBN exploitable. Photographiez la couverture ou saisissez un ISBN.",
+    "Aucune photo ni ISBN exploitable. Photographiez la couverture ou saisissez un ISBN.",
   );
 }
