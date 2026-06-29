@@ -320,6 +320,7 @@ function ResultScreen({
   onReset: () => void;
 }) {
   const conf = CONFIDENCE_LABEL[result.cotes.confidence];
+  const hasData = result.cotes.sampleSize > 0;
   return (
     <div className="fade-up flex flex-col gap-6">
       {/* En-tete : vignette + metadonnees */}
@@ -346,21 +347,35 @@ function ResultScreen({
         </div>
       </div>
 
-      {/* 3 cotes */}
-      <div className="grid grid-cols-3 gap-3">
-        <CoteCard label="Basse" value={result.cotes.low} />
-        <CoteCard label="Moyenne" value={result.cotes.mid} highlight />
-        <CoteCard label="Haute" value={result.cotes.high} />
-      </div>
+      {hasData ? (
+        <>
+          {/* 3 cotes */}
+          <div className="grid grid-cols-3 gap-3">
+            <CoteCard label="Basse" value={result.cotes.low} />
+            <CoteCard label="Moyenne" value={result.cotes.mid} highlight />
+            <CoteCard label="Haute" value={result.cotes.high} />
+          </div>
 
-      {/* Badge de confiance + audit */}
-      <div className="flex items-center justify-between text-xs">
-        <span className={`rounded-full border px-3 py-1 ${conf.cls}`}>{conf.label}</span>
-        <span className="text-muted">
-          {result.keptCount} annonces retenues
-          {result.removedCount > 0 && ` · ${result.removedCount} ecartees`}
-        </span>
-      </div>
+          {/* Badge de confiance + audit */}
+          <div className="flex items-center justify-between text-xs">
+            <span className={`rounded-full border px-3 py-1 ${conf.cls}`}>{conf.label}</span>
+            <span className="text-muted">
+              {result.keptCount} annonces retenues
+              {result.removedCount > 0 && ` · ${result.removedCount} ecartees`}
+            </span>
+          </div>
+        </>
+      ) : (
+        /* Aucune donnee marche : message propre plutot que "0 EUR". */
+        <div className="rounded-2xl border border-gold/30 bg-gold/5 p-4 text-sm leading-relaxed text-gold-soft">
+          <p className="font-serif text-base text-foreground">Couverture lue avec succes</p>
+          <p className="mt-2 text-muted">
+            La recherche de prix en direct sur le marche s&apos;active a la mise en place
+            (connexion AbeBooks). Les estimations sont disponibles des maintenant sur les
+            ouvrages de demonstration.
+          </p>
+        </div>
+      )}
 
       {/* Description editable */}
       <div className="flex flex-col gap-1">
